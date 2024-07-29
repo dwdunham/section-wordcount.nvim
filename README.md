@@ -41,3 +41,41 @@ augroup SectionWordcount
   \ }
 augroup END
 ```
+
+```lua
+-- Example to load In lazy:
+{
+  'dimfeld/section-wordcount.nvim',
+  config = function()
+    require('section-wordcount').setup{
+      startchar = '[',
+      endchar = ']',
+      title = 'Words'
+    }
+    vim.api.nvim_create_autocmd(
+      { 'BufEnter', 'InsertLeave', 'FocusGained' },
+      {
+        pattern = '*.md',
+        callback = function()
+          require('section-wordcount').wordcounter{}
+        end,
+        once = true
+      }
+    )
+  end
+},
+-- Example To add to lualine (need to add full elsewhere to setup properly)
+{
+  "nvim-lualine/lualine.nvim",
+  dependencies = { 'dwdunham/section-wordcount.nvim' },
+  config = function()
+    local section_wc = require('section-wordcount')
+    require('lualine').setup({
+      sections = {
+        lualine_x = { 'filetype' },
+        lualine_y = { section_wc.get_wordcount },
+      },
+    })
+  end
+}
+```

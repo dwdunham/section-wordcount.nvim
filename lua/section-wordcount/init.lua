@@ -3,6 +3,7 @@ local ns_id
 local highlight
 
 local M = {}
+local globals = {}
 
 local function line_wordcount(line)
   -- Replace each word with empty string and it returns the number of words replaced.
@@ -117,7 +118,10 @@ local function update_wordcounts(data, start_line, end_line)
     local needs_redraw = false
     if wordcount ~= region.wordcount then
       region.wordcount = wordcount
-      region.virt_text = string.format("%d Words", wordcount)
+      local start = globals.startchar;
+      local endchar = globals.endchar;
+      local title = globals.title;
+      region.virt_text = string.format("%s%d %s%s", start, wordcount, title, endchar)
       -- vim.pretty_print('update', region)
     end
   end
@@ -208,7 +212,7 @@ M.wordcounter = function(options)
 
       local header_level = line:match(header_re)
 
-      region = data.regions_by_line[line_num]
+      local region = data.regions_by_line[line_num]
 
       if region then
         if header_level then
@@ -250,11 +254,21 @@ M.wordcounter = function(options)
   })
 end
 
+M.get_wordcount = function()
+  local bufnr = api.nvim_get_current_buf()
+  local data = buffer_data[bufnr].line_counts
+  local out = 0;
+  for _, b in pairs(data) do out = out + b end
+  return out
+end
 
 M.setup = function(options)
   option = options or {}
   highlight = api.nvim_get_hl_id_by_name(option.highlight or "String")
-  virt_text_pos = option.virt_text_pos or "eol"
+  globals.endchar = options.endchar or ''
+  globals.startchar = options.startchar or ''
+  globals.title = options.title or 'Words'
+  local virt_text_pos = option.virt_text_pos or "eol"
   ns_id = api.nvim_create_namespace("section-wordcount")
 
   api.nvim_set_decoration_provider(ns_id, {
