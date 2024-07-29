@@ -7,7 +7,10 @@ local globals = {}
 
 local function line_wordcount(line)
   -- Replace each word with empty string and it returns the number of words replaced.
-  _, n = line:gsub("%w+", "")
+  if globals.skip_links then
+    line = line:gsub('%[%[[^%]]*%]%]', '')
+  end
+  local _, n = line:gsub("%w+", "")
   return n
 end
 
@@ -268,6 +271,7 @@ M.setup = function(options)
   globals.endchar = options.endchar or ''
   globals.startchar = options.startchar or ''
   globals.title = options.title or 'Words'
+  globals.skip_links = options.skip_links or false
   local virt_text_pos = option.virt_text_pos or "eol"
   ns_id = api.nvim_create_namespace("section-wordcount")
 
