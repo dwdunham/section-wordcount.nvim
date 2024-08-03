@@ -9,6 +9,7 @@ local function line_wordcount(line)
   -- Replace each word with empty string and it returns the number of words replaced.
   if globals.skip_links then
     line = line:gsub('%[%[[^%]]*%]%]', '')
+    line = line:gsub('%[[^%]]*%]([^)]*)', '')
   end
   local _, n = line:gsub("%w+", "")
   return n
